@@ -211,7 +211,7 @@ round(avg(amount_usd),1) as "📊Avg Volume($)", round(sum(fee),1) as "⛽Fees($
 round(avg(fee),5) as "💨Avg Fee($)", count(distinct destination_chain) as "📥#Dest Chains",
 count(distinct raw_asset) as "💎#Tokens"
 from overview
-    WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}'
+    WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}' and source_chain is not null
     GROUP BY 1
     ORDER BY 2 DESC
     """
