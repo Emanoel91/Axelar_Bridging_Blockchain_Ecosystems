@@ -9,13 +9,13 @@ from cryptography.hazmat.backends import default_backend
 
 # --- Page Config ------------------------------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Axelar: An Overview",
+    page_title="Axelar: Bridging Blockchain Ecosystems",
     page_icon="https://img.cryptorank.io/coins/axelar1663924228506.png",
     layout="wide"
 )
 
 # --- Title  -----------------------------------------------------------------------------------------------------
-st.title("📐Metrics")
+st.title("🚀Cross-chain Transfers Analysis")
 
 # --- attention ---------------------------------------------------------------------------------------------------------
 st.info("📊Charts initially display data for a default time range. Select a custom range to view results for your desired period.")
