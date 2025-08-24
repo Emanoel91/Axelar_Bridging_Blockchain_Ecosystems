@@ -106,3 +106,156 @@ with col2:
 
 with col3:
     end_date = st.date_input("End Date", value=pd.to_datetime("2025-08-31"))
+
+import streamlit as st
+import pandas as pd
+
+# --- Cached Query Execution ---------------------------------------------------------------------------------
+@st.cache_data
+def get_source_chain_data(conn, start_date, end_date):
+    query = f"""
+    WITH overview AS (
+        SELECT 
+    created_at, 
+    LOWER(data:send:original_source_chain) AS source_chain, 
+    LOWER(data:send:original_destination_chain) AS destination_chain,
+    sender_address AS user, 
+
+    CASE 
+      WHEN IS_ARRAY(data:send:amount) THEN NULL
+      WHEN IS_OBJECT(data:send:amount) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:send:amount::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:send:amount::STRING)
+      ELSE NULL
+    END AS amount,
+
+    CASE 
+      WHEN IS_ARRAY(data:send:amount) OR IS_ARRAY(data:link:price) THEN NULL
+      WHEN IS_OBJECT(data:send:amount) OR IS_OBJECT(data:link:price) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:send:amount::STRING) IS NOT NULL AND TRY_TO_DOUBLE(data:link:price::STRING) IS NOT NULL 
+        THEN TRY_TO_DOUBLE(data:send:amount::STRING) * TRY_TO_DOUBLE(data:link:price::STRING)
+      ELSE NULL
+    END AS amount_usd,
+
+    CASE 
+      WHEN IS_ARRAY(data:send:fee_value) THEN NULL
+      WHEN IS_OBJECT(data:send:fee_value) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:send:fee_value::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:send:fee_value::STRING)
+      ELSE NULL
+    END AS fee,
+
+    id, 
+    'Token Transfers' AS "Service", 
+    data:link:asset::STRING AS raw_asset
+
+  FROM axelar.axelscan.fact_transfers
+  WHERE status = 'executed'
+    AND simplified_status = 'received'
+    
+
+  UNION ALL
+
+  SELECT  
+    created_at,
+    LOWER(data:call.chain::STRING) AS source_chain,
+    LOWER(data:call.returnValues.destinationChain::STRING) AS destination_chain,
+    data:call.transaction.from::STRING AS user,
+
+    CASE 
+      WHEN IS_ARRAY(data:amount) OR IS_OBJECT(data:amount) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:amount::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:amount::STRING)
+      ELSE NULL
+    END AS amount,
+
+    CASE 
+      WHEN IS_ARRAY(data:value) OR IS_OBJECT(data:value) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:value::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:value::STRING)
+      ELSE NULL
+    END AS amount_usd,
+
+    COALESCE(
+      CASE 
+        WHEN IS_ARRAY(data:gas:gas_used_amount) OR IS_OBJECT(data:gas:gas_used_amount) 
+          OR IS_ARRAY(data:gas_price_rate:source_token.token_price.usd) OR IS_OBJECT(data:gas_price_rate:source_token.token_price.usd) 
+        THEN NULL
+        WHEN TRY_TO_DOUBLE(data:gas:gas_used_amount::STRING) IS NOT NULL 
+          AND TRY_TO_DOUBLE(data:gas_price_rate:source_token.token_price.usd::STRING) IS NOT NULL 
+        THEN TRY_TO_DOUBLE(data:gas:gas_used_amount::STRING) * TRY_TO_DOUBLE(data:gas_price_rate:source_token.token_price.usd::STRING)
+        ELSE NULL
+      END,
+      CASE 
+        WHEN IS_ARRAY(data:fees:express_fee_usd) OR IS_OBJECT(data:fees:express_fee_usd) THEN NULL
+        WHEN TRY_TO_DOUBLE(data:fees:express_fee_usd::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:fees:express_fee_usd::STRING)
+        ELSE NULL
+      END
+    ) AS fee,
+
+    id, 
+    'GMP' AS "Service", 
+    data:symbol::STRING AS raw_asset
+
+  FROM axelar.axelscan.fact_gmp 
+  WHERE status = 'executed'
+    AND simplified_status = 'received'
+    )
+
+SELECT created_at, id, user, source_chain, destination_chain,
+     "Service", amount, amount_usd, fee, raw_asset
+
+FROM axelar_service
+    )
+    SELECT source_chain as "📤Source Chain",
+           COUNT(DISTINCT id) as "🚀Transfers Count",
+           COUNT(DISTINCT user) as "👥Users Count",
+           ROUND(SUM(amount_usd),1) as "💸Transfers Volume (USD)",
+           ROUND(AVG(amount_usd),1) as "📊Avg Volume per Txn (USD)",
+           ROUND(SUM(fee),1) as "⛽Transfer Fees (USD)",
+           ROUND(AVG(fee),1) as "💨Avg Transfer Fee (USD)",
+           COUNT(DISTINCT destination_chain) as "📥Number of Destination Chains",
+           COUNT(DISTINCT raw_asset) as "💎Number of Tokens Transferred"
+    FROM overview
+    WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}'
+    GROUP BY 1
+    ORDER BY 2 DESC
+    """
+    df = pd.read_sql(query, conn)
+    return df
+
+# --- Load Data from Snowflake ---------------------------------------------------------------------------------
+df_source_chains = get_source_chain_data(conn, start_date, end_date)
+
+# --- Format Numbers and Reset Index Starting from 1 ------------------------------------------------------------
+df_display = df_source_chains.copy()
+for col in df_display.columns[1:]:
+    df_display[col] = df_display[col].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "-")
+df_display.index = range(1, len(df_display)+1)
+
+# --- Display Table ------------------------------------------------------------------------------------------------
+st.subheader("Monitoring Source Chains")
+st.table(df_display)
+
+# --- KPIs --------------------------------------------------------------------------------------------------------
+# برترین Source Chainها
+top_transfers = df_source_chains.loc[df_source_chains["🚀Transfers Count"].idxmax()]
+top_users = df_source_chains.loc[df_source_chains["👥Users Count"].idxmax()]
+top_volume = df_source_chains.loc[df_source_chains["💸Transfers Volume (USD)"].idxmax()]
+
+top_fees = df_source_chains.loc[df_source_chains["⛽Transfer Fees (USD)"].idxmax()]
+top_dest_chains = df_source_chains.loc[df_source_chains["📥Number of Destination Chains"].idxmax()]
+top_tokens = df_source_chains.loc[df_source_chains["💎Number of Tokens Transferred"].idxmax()]
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("Top Source Chain by Transfers Count", f"{top_transfers['📤Source Chain']} ({top_transfers['🚀Transfers Count']:,})")
+with col2:
+    st.metric("Top Source Chain by Users Count", f"{top_users['📤Source Chain']} ({top_users['👥Users Count']:,})")
+with col3:
+    st.metric("Top Source Chain by Transfers Volume (USD)", f"{top_volume['📤Source Chain']} (${top_volume['💸Transfers Volume (USD)']:,})")
+
+col4, col5, col6 = st.columns(3)
+with col4:
+    st.metric("Top Source Chain by Transfer Fees (USD)", f"{top_fees['📤Source Chain']} (${top_fees['⛽Transfer Fees (USD)']:,})")
+with col5:
+    st.metric("Top Source Chain by Number of Destination Chains", f"{top_dest_chains['📤Source Chain']} ({top_dest_chains['📥Number of Destination Chains']:,})")
+with col6:
+    st.metric("Top Source Chain by Number of Tokens Transferred", f"{top_tokens['📤Source Chain']} ({top_tokens['💎Number of Tokens Transferred']:,})")
+
