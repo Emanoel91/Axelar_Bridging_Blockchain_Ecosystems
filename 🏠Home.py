@@ -2,7 +2,7 @@ import streamlit as st
 
 # --- Page Config: Tab Title & Icon ---
 st.set_page_config(
-    page_title="Axelar: An overview",
+    page_title="Axelar: Bridging Blockchain Ecosystems",
     page_icon="https://img.cryptorank.io/coins/axelar1663924228506.png",
     layout="wide" 
 )
@@ -35,14 +35,9 @@ st.markdown(
 st.markdown(
     """
     <div style="background-color: #cff1e4; padding: 15px; border-radius: 10px; border: 1px solid #cff1e4;">
-        Axelar emerges as the cutting-edge platform revolutionizing Web3 interoperability, poised to propel the next wave of internet applications to unparalleled heights, 
-        accommodating billions of users worldwide. With its innovative architecture and robust infrastructure, Axelar paves the way for seamless connectivity across diverse 
-        blockchain networks, facilitating frictionless data and asset transfer while ensuring utmost security and efficiency.
-        At its core, Axelar serves as the bridge between disparate blockchain ecosystems, enabling developers to harness the full potential of decentralized applications (dApps) 
-        without constraints. By offering a programmable framework, Axelar empowers developers to effortlessly integrate their applications with multiple blockchains, unlocking 
-        unprecedented scalability and accessibility on a global scale.
-        In a landscape where interoperability is paramount, Axelar stands as the beacon of innovation, driving forward the vision of a truly interconnected Web3 ecosystem. 
-        
+        Axelar enables simple cross-chain communication by providing a decentralized network along with tools, protocols, and APIs that can be utilized for cross-chain requests.
+        Axelar’s protocol suite consists of transfer protocols and cross-border routing to enable communication across blockchains without the need for a shared programming language 
+        or custom changes on the chain. 
 </div>
     """,
     unsafe_allow_html=True
