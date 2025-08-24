@@ -114,8 +114,10 @@ import pandas as pd
 @st.cache_data
 def get_source_chain_data(_conn, start_date, end_date):
     query = f"""
-    WITH overview AS (
-        SELECT 
+    with overview as (
+WITH axelar_service AS (
+  
+  SELECT 
     created_at, 
     LOWER(data:send:original_source_chain) AS source_chain, 
     LOWER(data:send:original_destination_chain) AS destination_chain,
@@ -201,18 +203,14 @@ def get_source_chain_data(_conn, start_date, end_date):
 SELECT created_at, id, user, source_chain, destination_chain,
      "Service", amount, amount_usd, fee, raw_asset
 
-FROM axelar_service
-    )
-    SELECT source_chain as "📤Source Chain",
-           COUNT(DISTINCT id) as "🚀Transfers Count",
-           COUNT(DISTINCT user) as "👥Users Count",
-           ROUND(SUM(amount_usd),1) as "💸Transfers Volume (USD)",
-           ROUND(AVG(amount_usd),1) as "📊Avg Volume per Txn (USD)",
-           ROUND(SUM(fee),1) as "⛽Transfer Fees (USD)",
-           ROUND(AVG(fee),1) as "💨Avg Transfer Fee (USD)",
-           COUNT(DISTINCT destination_chain) as "📥Number of Destination Chains",
-           COUNT(DISTINCT raw_asset) as "💎Number of Tokens Transferred"
-    FROM overview
+FROM axelar_service)
+
+select source_chain as "📤Source Chain", count(distinct id) as "🚀Transfers Count",
+count(distinct user) as "👥Users Count", round(sum(amount_usd),1) as "💸Transfers Volume (USD)",
+round(avg(amount_usd),1) as "📊Avg Volume per Txn (USD)", round(sum(fee),1) as "⛽Transfer Fees (USD)",
+round(avg(fee),1) as "💨Avg Transfer Fee (USD)", count(distinct destination_chain) as "📥Number of Destination Chains",
+count(distinct raw_asset) as "💎Number of Tokens Transferred"
+from overview
     WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}'
     GROUP BY 1
     ORDER BY 2 DESC
