@@ -12,7 +12,7 @@ st.markdown(
     """
     <div style="display: flex; align-items: center; gap: 15px;">
         <img src="https://img.cryptorank.io/coins/axelar1663924228506.png" alt="Axelar Logo" style="width:60px; height:60px;">
-        <h1 style="margin: 0;">Axelar: An overview</h1>
+        <h1 style="margin: 0;">Axelar: Bridging Blockchain Ecosystems</h1>
     </div>
     """,
     unsafe_allow_html=True
