@@ -205,11 +205,11 @@ SELECT created_at, id, user, source_chain, destination_chain,
 
 FROM axelar_service)
 
-select source_chain as "📤Source Chain", count(distinct id) as "🚀Transfers Count",
-count(distinct user) as "👥Users Count", round(sum(amount_usd),1) as "💸Transfers Volume (USD)",
-round(avg(amount_usd),1) as "📊Avg Volume per Txn (USD)", round(sum(fee),1) as "⛽Transfer Fees (USD)",
-round(avg(fee),1) as "💨Avg Transfer Fee (USD)", count(distinct destination_chain) as "📥Number of Destination Chains",
-count(distinct raw_asset) as "💎Number of Tokens Transferred"
+select source_chain as "📤Source Chain", count(distinct id) as "🚀Transfers",
+count(distinct user) as "👥Users", round(sum(amount_usd),1) as "💸Volume($)",
+round(avg(amount_usd),1) as "📊Avg Volume($)", round(sum(fee),1) as "⛽Fees($)",
+round(avg(fee),1) as "💨Avg Fee($)", count(distinct destination_chain) as "📥#Dest Chains",
+count(distinct raw_asset) as "💎#Tokens"
 from overview
     WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}'
     GROUP BY 1
@@ -233,27 +233,27 @@ st.table(df_display)
 
 # --- KPIs --------------------------------------------------------------------------------------------------------
 # برترین Source Chainها
-top_transfers = df_source_chains.loc[df_source_chains["🚀Transfers Count"].idxmax()]
-top_users = df_source_chains.loc[df_source_chains["👥Users Count"].idxmax()]
-top_volume = df_source_chains.loc[df_source_chains["💸Transfers Volume (USD)"].idxmax()]
+top_transfers = df_source_chains.loc[df_source_chains["🚀Transfers"].idxmax()]
+top_users = df_source_chains.loc[df_source_chains["👥Users"].idxmax()]
+top_volume = df_source_chains.loc[df_source_chains["💸Volume($)"].idxmax()]
 
-top_fees = df_source_chains.loc[df_source_chains["⛽Transfer Fees (USD)"].idxmax()]
-top_dest_chains = df_source_chains.loc[df_source_chains["📥Number of Destination Chains"].idxmax()]
-top_tokens = df_source_chains.loc[df_source_chains["💎Number of Tokens Transferred"].idxmax()]
+top_fees = df_source_chains.loc[df_source_chains["⛽Fees($)"].idxmax()]
+top_dest_chains = df_source_chains.loc[df_source_chains["📥#Dest Chains"].idxmax()]
+top_tokens = df_source_chains.loc[df_source_chains["💎#Tokens"].idxmax()]
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric("Top Source Chain by Transfers Count", f"{top_transfers['📤Source Chain']} ({top_transfers['🚀Transfers Count']:,})")
+    st.metric("Top Source Chain by Transfers Count", f"{top_transfers['📤Source Chain']} ({top_transfers['🚀Transfers']:,})")
 with col2:
-    st.metric("Top Source Chain by Users Count", f"{top_users['📤Source Chain']} ({top_users['👥Users Count']:,})")
+    st.metric("Top Source Chain by Users Count", f"{top_users['📤Source Chain']} ({top_users['👥Users']:,})")
 with col3:
-    st.metric("Top Source Chain by Transfers Volume (USD)", f"{top_volume['📤Source Chain']} (${top_volume['💸Transfers Volume (USD)']:,})")
+    st.metric("Top Source Chain by Transfers Volume (USD)", f"{top_volume['📤Source Chain']} (${top_volume['💸Volume($)']:,})")
 
 col4, col5, col6 = st.columns(3)
 with col4:
-    st.metric("Top Source Chain by Transfer Fees (USD)", f"{top_fees['📤Source Chain']} (${top_fees['⛽Transfer Fees (USD)']:,})")
+    st.metric("Top Source Chain by Transfer Fees (USD)", f"{top_fees['📤Source Chain']} (${top_fees['⛽Fees($)']:,})")
 with col5:
-    st.metric("Top Source Chain by Number of Destination Chains", f"{top_dest_chains['📤Source Chain']} ({top_dest_chains['📥Number of Destination Chains']:,})")
+    st.metric("Top Source Chain by Number of Destination Chains", f"{top_dest_chains['📤Source Chain']} ({top_dest_chains['📥#Dest Chains']:,})")
 with col6:
-    st.metric("Top Source Chain by Number of Tokens Transferred", f"{top_tokens['📤Source Chain']} ({top_tokens['💎Number of Tokens Transferred']:,})")
+    st.metric("Top Source Chain by Number of Tokens Transferred", f"{top_tokens['📤Source Chain']} ({top_tokens['💎#Tokens']:,})")
 
