@@ -232,7 +232,7 @@ df_display.index = range(1, len(df_display)+1)
 
 # --- Display Table ------------------------------------------------------------------------------------------------
 st.subheader("Monitoring Source Chains")
-st.dataframe(df_display.head(10)) 
+st.dataframe(df_display, height=400)
 
 # --- KPIs --------------------------------------------------------------------------------------------------------
 
