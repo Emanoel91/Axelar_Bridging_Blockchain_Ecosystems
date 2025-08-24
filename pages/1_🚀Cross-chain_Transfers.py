@@ -112,7 +112,7 @@ import pandas as pd
 
 # --- Cached Query Execution ---------------------------------------------------------------------------------
 @st.cache_data
-def get_source_chain_data(conn, start_date, end_date):
+def get_source_chain_data(_conn, start_date, end_date):
     query = f"""
     WITH overview AS (
         -- همان کوئری طولانی شما در اینجا
@@ -131,7 +131,7 @@ def get_source_chain_data(conn, start_date, end_date):
     GROUP BY 1
     ORDER BY 2 DESC
     """
-    df = pd.read_sql(query, conn)
+    df = pd.read_sql(query, _conn)
     return df
 
 # --- Load Data from Snowflake ---------------------------------------------------------------------------------
