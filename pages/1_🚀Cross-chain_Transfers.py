@@ -224,7 +224,7 @@ df_source_chains = get_source_chain_data(conn, start_date, end_date)
 # --- Format Numbers and Reset Index Starting from 1 ------------------------------------------------------------
 df_display = df_source_chains.copy()
 for col in df_display.columns[1:]:
-    df_display[col] = df_display[col].apply(lambda x: f"{x:,.000f}" if pd.notnull(x) else "-")
+    df_display[col] = df_display[col].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "-")
 df_display.index = range(1, len(df_display)+1)
 
 # --- Display Table ------------------------------------------------------------------------------------------------
