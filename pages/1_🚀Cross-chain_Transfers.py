@@ -799,7 +799,7 @@ select "Symbol" as "💎Token", count(distinct id) as "🚀Transfers",
 count(distinct user) as "👥Users", round(sum(amount_usd),1) as "💸Volume($)",
 round(avg(amount_usd),1) as "📊Avg Volume($)", round(sum(fee),1) as "⛽Fees($)",
 round(avg(fee),5) as "💨Avg Fee($)", count(distinct source_chain) as "📤#Source Chains",
-count(distinct destination_chain) as "📥#Destination Chain"
+count(distinct destination_chain) as "📥#Destination Chains"
 from overview
     WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}' and "Symbol" is not null
     GROUP BY 1
@@ -832,7 +832,7 @@ top_volume = df_token.loc[df_token["💸Volume($)"].idxmax()]
 
 top_fees = df_token.loc[df_token["⛽Fees($)"].idxmax()]
 top_by_source_chain_count = df_token.loc[df_token["📤#Source Chains"].idxmax()]
-top_by_destination_chain_count = df_token.loc[df_token["📥#Destination Chain"].idxmax()]
+top_by_destination_chain_count = df_token.loc[df_token["📥#Destination Chains"].idxmax()]
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -865,5 +865,5 @@ with col5:
 with col6:
     st.metric(
         "Top Token by Number of Destination Chains",
-        f"{top_by_destination_chain_count['💎Token']} ({top_by_destination_chain_count['📥#Destination Chain']:,})"
+        f"{top_by_destination_chain_count['💎Token']} ({top_by_destination_chain_count['📥#Destination Chains']:,})"
     )
