@@ -376,7 +376,7 @@ FROM axelar_service)
 select destination_chain as "📥Destination Chain", count(distinct id) as "🚀Transfers",
 count(distinct user) as "👥Users", round(sum(amount_usd),1) as "💸Volume($)",
 round(avg(amount_usd),1) as "📊Avg Volume($)", round(sum(fee),1) as "⛽Fees($)",
-round(avg(fee),5) as "💨Avg Fee($)", count(distinct source_chain) as "📥#Source Chains",
+round(avg(fee),5) as "💨Avg Fee($)", count(distinct source_chain) as "📤#Source Chains",
 count(distinct raw_asset) as "💎#Tokens"
 from overview
     WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}' and destination_chain is not null
