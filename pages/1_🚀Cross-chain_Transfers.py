@@ -421,7 +421,7 @@ with col1:
 with col2:
     st.metric(
         "Top Destination Chain by Users Count",
-        f"{top_users['📥Destination']} ({top_users['👥Users'] / 1_000:.1f}k)"
+        f"{top_users['📥Destination Chain']} ({top_users['👥Users'] / 1_000:.1f}k)"
     )
 with col3:
     st.metric(
