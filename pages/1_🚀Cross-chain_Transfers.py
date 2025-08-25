@@ -623,7 +623,7 @@ with col4:
 with col5:
     st.markdown(
         f"""
-        **Top Path by Number of Source Chains**  
+        **Top Path by Avg Txn per User**  
 
         {top_avg_txn_per_user['🔀Path']}  
         **{top_avg_txn_per_user['📋Txn/User']:,}**
