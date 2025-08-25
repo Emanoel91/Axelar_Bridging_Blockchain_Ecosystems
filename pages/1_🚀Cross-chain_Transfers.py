@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # --- Title  -----------------------------------------------------------------------------------------------------
-st.title("🚀Cross-chain Transfers Analysis000000")
+st.title("🚀Cross-chain Transfers Analysis")
 
 # --- attention ---------------------------------------------------------------------------------------------------------
 st.info("📊Tables initially display data for a default time range. Select a custom range to view results for your desired period.")
@@ -861,3 +861,4 @@ with col6:
         "Top Token by Number of Destination Chains",
         f"{top_by_destination_chain_count['💎Token']} ({top_by_destination_chain_count['📥#Destination Chains']:,})"
     )
+000000jhfgfg
