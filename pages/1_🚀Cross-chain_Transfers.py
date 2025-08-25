@@ -861,4 +861,4 @@ with col6:
         "Top Token by Number of Destination Chains",
         f"{top_by_destination_chain_count['💎Token']} ({top_by_destination_chain_count['📥#Destination Chains']:,})"
     )
-000000jhfgfg
+
