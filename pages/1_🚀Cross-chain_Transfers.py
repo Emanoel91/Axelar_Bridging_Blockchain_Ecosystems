@@ -583,34 +583,58 @@ top_tokens = df_path_chains.loc[df_path_chains["💎#Tokens"].idxmax()]
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric(
-        "Top Path by Transfers Count",
-        f"{top_transfers['🔀Path']} ({top_transfers['🚀Transfers'] / 1_000:.1f}k)"
+    st.markdown(
+        f"""
+        **Top Path by Transfers Count**  
+
+        {top_transfers['🔀Path']}  
+        **{top_transfers['🚀Transfers'] / 1_000:.1f}k**
+        """
     )
 with col2:
-    st.metric(
-        "Top Path by Users Count",
-        f"{top_users['🔀Path']} ({top_users['👥Users'] / 1_000:.1f}k)"
+    st.markdown(
+        f"""
+        **Top Path by Users Count**  
+
+        {top_users['🔀Path']}  
+        **{top_users['👥Users'] / 1_000:.1f}k**
+        """
     )
 with col3:
-    st.metric(
-        "Top Path by Transfers Volume (USD)",
-        f"{top_volume['🔀Path']} (${top_volume['💸Volume($)'] / 1_000_000:.2f}m)"
+    st.markdown(
+        f"""
+        **Top Path by Transfers Volume (USD)**  
+
+        {top_volume['🔀Path']}  
+        **${top_volume['💸Volume($)'] / 1_000_000:.2f}m**
+        """
     )
 
 col4, col5, col6 = st.columns(3)
 with col4:
-    st.metric(
-        "Top Path by Transfer Fees (USD)",
-        f"{top_fees['🔀Path']} (${top_fees['⛽Fees($)'] / 1_000:.1f}k)"
+    st.markdown(
+        f"""
+        **Top Path by Transfer Fees (USD)**  
+
+        {top_fees['🔀Path']}  
+        **${top_fees['⛽Fees($)'] / 1_000:.1f}k**
+        """
     )
 with col5:
-    st.metric(
-        "Top Path by Number of Source Chains",
-        f"{top_avg_txn_per_user['🔀Path']} ({top_avg_txn_per_user['📋Txn/User']:,})"
+    st.markdown(
+        f"""
+        **Top Path by Number of Source Chains**  
+
+        {top_avg_txn_per_user['🔀Path']}  
+        **{top_avg_txn_per_user['📋Txn/User']:,}**
+        """
     )
 with col6:
-    st.metric(
-        "Top Path by Number of Tokens Transferred",
-        f"{top_tokens['🔀Path']} ({top_tokens['💎#Tokens']:,})"
+    st.markdown(
+        f"""
+        **Top Path by Number of Tokens Transferred**  
+
+        {top_tokens['🔀Path']}  
+        **{top_tokens['💎#Tokens']:,}**
+        """
     )
