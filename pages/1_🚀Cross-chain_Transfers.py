@@ -795,7 +795,7 @@ SELECT created_at, id, user, source_chain, destination_chain,
 
 FROM axelar_service)
 
-select "Symbol" as "💎Token, count(distinct id) as "🚀Transfers",
+select "Symbol" as "💎Token", count(distinct id) as "🚀Transfers",
 count(distinct user) as "👥Users", round(sum(amount_usd),1) as "💸Volume($)",
 round(avg(amount_usd),1) as "📊Avg Volume($)", round(sum(fee),1) as "⛽Fees($)",
 round(avg(fee),5) as "💨Avg Fee($)", count(distinct source_chain) as "📤#Source Chains",
