@@ -231,7 +231,7 @@ for col in df_display.columns[1:]:
 df_display.index = range(1, len(df_display)+1)
 
 # --- Display Table ------------------------------------------------------------------------------------------------
-st.subheader("Monitoring Source Chains")
+st.subheader("1️⃣Monitoring Source Chains")
 st.dataframe(df_display, height=400)
 
 # --- KPIs --------------------------------------------------------------------------------------------------------
@@ -399,7 +399,7 @@ for col in df_display.columns[1:]:
 df_display.index = range(1, len(df_display)+1)
 
 # --- Display Table ------------------------------------------------------------------------------------------------
-st.subheader("Monitoring Destination Chains")
+st.subheader("2️⃣Monitoring Destination Chains")
 st.dataframe(df_display, height=400)
 
 # --- KPIs --------------------------------------------------------------------------------------------------------
@@ -568,7 +568,7 @@ for col in df_display.columns[1:]:
 df_display.index = range(1, len(df_display)+1)
 
 # --- Display Table ------------------------------------------------------------------------------------------------
-st.subheader("Monitoring Cross-Chain Paths")
+st.subheader("3️⃣Monitoring Cross-Chain Paths")
 st.dataframe(df_display, height=400)
 
 # --- KPIs --------------------------------------------------------------------------------------------------------
@@ -821,7 +821,7 @@ for col in df_display.columns[1:]:
 df_display.index = range(1, len(df_display)+1)
 
 # --- Display Table ------------------------------------------------------------------------------------------------
-st.subheader("Monitoring Tokens")
+st.subheader("4️⃣Monitoring Tokens")
 st.dataframe(df_display, height=400)
 
 # --- KPIs --------------------------------------------------------------------------------------------------------
