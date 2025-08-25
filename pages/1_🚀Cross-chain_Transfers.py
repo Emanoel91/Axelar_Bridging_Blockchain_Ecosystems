@@ -86,7 +86,7 @@ private_key_bytes = private_key.private_bytes(
     encryption_algorithm=serialization.NoEncryption()
 )
 
-conn = snowflake.connector.connect(
+conn = snowflake.connector.connect( 
     user=user,
     account=account,
     private_key=private_key_bytes,
