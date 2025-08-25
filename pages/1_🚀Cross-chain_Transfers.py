@@ -246,17 +246,36 @@ top_tokens = df_source_chains.loc[df_source_chains["💎#Tokens"].idxmax()]
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric("Top Source Chain by Transfers Count", f"{top_transfers['📤Source Chain']} ({top_transfers['🚀Transfers']:,})")
+    st.metric(
+        "Top Source Chain by Transfers Count",
+        f"{top_transfers['📤Source Chain']} ({top_transfers['🚀Transfers'] / 1_000:.1f}k)"
+    )
 with col2:
-    st.metric("Top Source Chain by Users Count", f"{top_users['📤Source Chain']} ({top_users['👥Users']:,})")
+    st.metric(
+        "Top Source Chain by Users Count",
+        f"{top_users['📤Source Chain']} ({top_users['👥Users'] / 1_000:.1f}k)"
+    )
 with col3:
-    st.metric("Top Source Chain by Transfers Volume (USD)", f"{top_volume['📤Source Chain']} (${top_volume['💸Volume($)']:,})")
+    st.metric(
+        "Top Source Chain by Transfers Volume (USD)",
+        f"{top_volume['📤Source Chain']} (${top_volume['💸Volume($)'] / 1_000_000:.2f}m)"
+    )
 
 col4, col5, col6 = st.columns(3)
 with col4:
-    st.metric("Top Source Chain by Transfer Fees (USD)", f"{top_fees['📤Source Chain']} (${top_fees['⛽Fees($)']:,})")
+    st.metric(
+        "Top Source Chain by Transfer Fees (USD)",
+        f"{top_fees['📤Source Chain']} (${top_fees['⛽Fees($)'] / 1_000:.1f}k)"
+    )
 with col5:
-    st.metric("Top Source Chain by Number of Destination Chains", f"{top_dest_chains['📤Source Chain']} ({top_dest_chains['📥#Dest Chains']:,})")
+    st.metric(
+        "Top Source Chain by Number of Destination Chains",
+        f"{top_dest_chains['📤Source Chain']} ({top_dest_chains['📥#Dest Chains']:,})"
+    )
 with col6:
-    st.metric("Top Source Chain by Number of Tokens Transferred", f"{top_tokens['📤Source Chain']} ({top_tokens['💎#Tokens']:,})")
+    st.metric(
+        "Top Source Chain by Number of Tokens Transferred",
+        f"{top_tokens['📤Source Chain']} ({top_tokens['💎#Tokens']:,})"
+    )
+
 
