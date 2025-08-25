@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # --- Title  -----------------------------------------------------------------------------------------------------
-st.title("🚀Cross-chain Transfers Analysis")
+st.title("🚀Cross-chain Transfers Analysis000000")
 
 # --- attention ---------------------------------------------------------------------------------------------------------
 st.info("📊Tables initially display data for a default time range. Select a custom range to view results for your desired period.")
