@@ -438,7 +438,7 @@ with col4:
 with col5:
     st.metric(
         "Top Destination Chain by Number of Destination Chains",
-        f"{top_dest_chains['📥Destination Chain']} ({top_dest_chains['📤#Source Chains']:,})"
+        f"{top_source_chains['📥Destination Chain']} ({top_source_chains['📤#Source Chains']:,})"
     )
 with col6:
     st.metric(
