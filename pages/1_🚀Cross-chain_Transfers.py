@@ -409,7 +409,7 @@ top_users = df_destination_chains.loc[df_destination_chains["👥Users"].idxmax(
 top_volume = df_destination_chains.loc[df_destination_chains["💸Volume($)"].idxmax()]
 
 top_fees = df_destination_chains.loc[df_destination_chains["⛽Fees($)"].idxmax()]
-top_source_chains = df_destination_chains.loc[df_destination_chains["📤#Source Chains"].idxmax()]
+top_avg_txn_per_user = df_destination_chains.loc[df_destination_chains["📤#Source Chains"].idxmax()]
 top_tokens = df_destination_chains.loc[df_destination_chains["💎#Tokens"].idxmax()]
 
 col1, col2, col3 = st.columns(3)
@@ -438,10 +438,179 @@ with col4:
 with col5:
     st.metric(
         "Top Destination Chain by Number of Source Chains",
-        f"{top_source_chains['📥Destination Chain']} ({top_source_chains['📤#Source Chains']:,})"
+        f"{top_avg_txn_per_user['📥Destination Chain']} ({top_avg_txn_per_user['📤#Source Chains']:,})"
     )
 with col6:
     st.metric(
         "Top Destination Chain by Number of Tokens Transferred",
         f"{top_tokens['📥Destination Chain']} ({top_tokens['💎#Tokens']:,})"
+    )
+
+# ---Cross-chain Path Analysis --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@st.cache_data
+def get_path_chain_data(_conn, start_date, end_date):
+    query = f"""
+    with overview as (
+WITH axelar_service AS (
+  
+  SELECT 
+    created_at, 
+    LOWER(data:send:original_source_chain) AS source_chain, 
+    LOWER(data:send:original_destination_chain) AS destination_chain,
+    sender_address AS user, 
+
+    CASE 
+      WHEN IS_ARRAY(data:send:amount) THEN NULL
+      WHEN IS_OBJECT(data:send:amount) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:send:amount::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:send:amount::STRING)
+      ELSE NULL
+    END AS amount,
+
+    CASE 
+      WHEN IS_ARRAY(data:send:amount) OR IS_ARRAY(data:link:price) THEN NULL
+      WHEN IS_OBJECT(data:send:amount) OR IS_OBJECT(data:link:price) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:send:amount::STRING) IS NOT NULL AND TRY_TO_DOUBLE(data:link:price::STRING) IS NOT NULL 
+        THEN TRY_TO_DOUBLE(data:send:amount::STRING) * TRY_TO_DOUBLE(data:link:price::STRING)
+      ELSE NULL
+    END AS amount_usd,
+
+    CASE 
+      WHEN IS_ARRAY(data:send:fee_value) THEN NULL
+      WHEN IS_OBJECT(data:send:fee_value) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:send:fee_value::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:send:fee_value::STRING)
+      ELSE NULL
+    END AS fee,
+
+    id, 
+    'Token Transfers' AS "Service", 
+    data:link:asset::STRING AS raw_asset
+
+  FROM axelar.axelscan.fact_transfers
+  WHERE status = 'executed'
+    AND simplified_status = 'received'
+    
+
+  UNION ALL
+
+  SELECT  
+    created_at,
+    LOWER(data:call.chain::STRING) AS source_chain,
+    LOWER(data:call.returnValues.destinationChain::STRING) AS destination_chain,
+    data:call.transaction.from::STRING AS user,
+
+    CASE 
+      WHEN IS_ARRAY(data:amount) OR IS_OBJECT(data:amount) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:amount::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:amount::STRING)
+      ELSE NULL
+    END AS amount,
+
+    CASE 
+      WHEN IS_ARRAY(data:value) OR IS_OBJECT(data:value) THEN NULL
+      WHEN TRY_TO_DOUBLE(data:value::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:value::STRING)
+      ELSE NULL
+    END AS amount_usd,
+
+    COALESCE(
+      CASE 
+        WHEN IS_ARRAY(data:gas:gas_used_amount) OR IS_OBJECT(data:gas:gas_used_amount) 
+          OR IS_ARRAY(data:gas_price_rate:source_token.token_price.usd) OR IS_OBJECT(data:gas_price_rate:source_token.token_price.usd) 
+        THEN NULL
+        WHEN TRY_TO_DOUBLE(data:gas:gas_used_amount::STRING) IS NOT NULL 
+          AND TRY_TO_DOUBLE(data:gas_price_rate:source_token.token_price.usd::STRING) IS NOT NULL 
+        THEN TRY_TO_DOUBLE(data:gas:gas_used_amount::STRING) * TRY_TO_DOUBLE(data:gas_price_rate:source_token.token_price.usd::STRING)
+        ELSE NULL
+      END,
+      CASE 
+        WHEN IS_ARRAY(data:fees:express_fee_usd) OR IS_OBJECT(data:fees:express_fee_usd) THEN NULL
+        WHEN TRY_TO_DOUBLE(data:fees:express_fee_usd::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:fees:express_fee_usd::STRING)
+        ELSE NULL
+      END
+    ) AS fee,
+
+    id, 
+    'GMP' AS "Service", 
+    data:symbol::STRING AS raw_asset
+
+  FROM axelar.axelscan.fact_gmp 
+  WHERE status = 'executed'
+    AND simplified_status = 'received'
+    )
+
+SELECT created_at, id, user, source_chain, destination_chain,
+     "Service", amount, amount_usd, fee, raw_asset
+
+FROM axelar_service)
+
+select source_chain || '➡' || destination_chain as "🔀Path", count(distinct id) as "🚀Transfers",
+count(distinct user) as "👥Users", round(sum(amount_usd),1) as "💸Volume($)",
+round(avg(amount_usd),1) as "📊Avg Volume($)", round(sum(fee),1) as "⛽Fees($)",
+round(avg(fee),5) as "💨Avg Fee($)", round(count(distinct id)/count(distinct user)) as "📋Txn/User",
+count(distinct raw_asset) as "💎#Tokens"
+from overview
+    WHERE created_at::date >= '{start_date}' AND created_at::date <= '{end_date}' and destination_chain is not null
+    GROUP BY 1
+    ORDER BY 2 DESC
+    """
+    df = pd.read_sql(query, _conn)
+    return df
+
+# --- Load Data from Snowflake ---------------------------------------------------------------------------------
+df_path_chains = get_path_chain_data(conn, start_date, end_date)
+
+# --- Format Numbers and Reset Index Starting from 1 ------------------------------------------------------------
+df_display = df_path_chains.copy()
+for col in df_display.columns[1:]:
+    if col == "💨Avg Fee($)":
+        df_display[col] = df_display[col].apply(lambda x: f"{x:,.3f}" if pd.notnull(x) else "-")
+    else:
+        df_display[col] = df_display[col].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "-")
+df_display.index = range(1, len(df_display)+1)
+
+# --- Display Table ------------------------------------------------------------------------------------------------
+st.subheader("Monitoring Cross-Chain Paths")
+st.dataframe(df_display, height=400)
+
+# --- KPIs --------------------------------------------------------------------------------------------------------
+
+top_transfers = df_path_chains.loc[df_path_chains["🚀Transfers"].idxmax()]
+top_users = df_path_chains.loc[df_path_chains["👥Users"].idxmax()]
+top_volume = df_path_chains.loc[df_path_chains["💸Volume($)"].idxmax()]
+
+top_fees = df_path_chains.loc[df_path_chains["⛽Fees($)"].idxmax()]
+top_avg_txn_per_user = df_path_chains.loc[df_path_chains["📋Txn/User"].idxmax()]
+top_tokens = df_path_chains.loc[df_path_chains["💎#Tokens"].idxmax()]
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric(
+        "Top Path by Transfers Count",
+        f"{top_transfers['🔀Path']} ({top_transfers['🚀Transfers'] / 1_000:.1f}k)"
+    )
+with col2:
+    st.metric(
+        "Top Path by Users Count",
+        f"{top_users['🔀Path']} ({top_users['👥Users'] / 1_000:.1f}k)"
+    )
+with col3:
+    st.metric(
+        "Top Path by Transfers Volume (USD)",
+        f"{top_volume['🔀Path']} (${top_volume['💸Volume($)'] / 1_000_000:.2f}m)"
+    )
+
+col4, col5, col6 = st.columns(3)
+with col4:
+    st.metric(
+        "Top Path by Transfer Fees (USD)",
+        f"{top_fees['🔀Path']} (${top_fees['⛽Fees($)'] / 1_000:.1f}k)"
+    )
+with col5:
+    st.metric(
+        "Top Path by Number of Source Chains",
+        f"{top_avg_txn_per_user['🔀Path']} ({top_avg_txn_per_user['📋Txn/User']:,})"
+    )
+with col6:
+    st.metric(
+        "Top Path by Number of Tokens Transferred",
+        f"{top_tokens['🔀Path']} ({top_tokens['💎#Tokens']:,})"
     )
